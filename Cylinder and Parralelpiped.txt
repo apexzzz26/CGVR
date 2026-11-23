@@ -1,0 +1,94 @@
+
+#include <GL/glut.h>
+#include <cmath>
+
+void circle(int xc, int yc, int r) {
+    glColor3f(1, 0, 0);
+
+    glBegin(GL_POINTS);
+
+    for (float t = 0; t < 6.28318; t += 0.01) {
+        glVertex2i(xc + r * cos(t), yc + r * sin(t));
+    }
+
+    glEnd();
+}
+
+void cylinder() {
+    for (int i = 0; i < 200; i += 3) {
+        circle(200, 200 + i, 50);
+    }
+}
+
+void rectangle(int x, int y) {
+    glColor3f(0, 1, 0);
+
+    glBegin(GL_LINE_LOOP);
+
+    glVertex2i(x, y);
+    glVertex2i(x + 200, y);
+    glVertex2i(x + 200, y + 200);
+    glVertex2i(x, y + 200);
+
+    glEnd();
+}
+
+void parallelepiped() {
+    for (int i = 0; i < 100; i += 2) {
+        rectangle(100 + i, 100 + i);
+    }
+}
+
+void init() {
+    glClearColor(1, 1, 1, 1);
+
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+
+    gluOrtho2D(0, 500, 0, 500);
+
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+}
+
+void d1() {
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    cylinder();
+
+    glFlush();
+}
+
+void d2() {
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    parallelepiped();
+
+    glFlush();
+}
+
+int main(int argc, char** argv) {
+
+    glutInit(&argc, argv);
+
+    glutInitDisplayMode(GLUT_RGB | GLUT_SINGLE);
+    glutInitWindowSize(500, 500);
+
+    // First window: Cylinder
+    glutInitWindowPosition(100, 100);
+    glutCreateWindow("Cylinder");
+
+    init();
+    glutDisplayFunc(d1);
+
+    // Second window: Parallelepiped
+    glutInitWindowPosition(650, 100);
+    glutCreateWindow("Parallelepiped");
+
+    init();
+    glutDisplayFunc(d2);
+
+    glutMainLoop();
+
+    return 0;
+}

@@ -1,0 +1,87 @@
+
+#include <GL/glut.h>
+#include <iostream>
+#include <cstdlib>
+using namespace std;
+
+int x1, y1, x2, y2;
+
+void pixel(int x, int y) {
+    glBegin(GL_POINTS);
+    glVertex2i(x, y);
+    glEnd();
+}
+
+void draw() {
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    int dx = abs(x2 - x1);
+    int dy = abs(y2 - y1);
+
+    int sx = (x1 < x2) ? 1 : -1;
+    int sy = (y1 < y2) ? 1 : -1;
+
+    glColor3f(0, 0, 1);
+    glPointSize(5);
+
+    int x = x1, y = y1;
+    int p;
+
+    if (dx > dy) {
+        p = 2 * dy - dx;
+
+        for (int i = 0; i <= dx; i++) {
+            pixel(x, y);
+
+            x += sx;
+
+            if (p >= 0) {
+                y += sy;
+                p -= 2 * dx;
+            }
+
+            p += 2 * dy;
+        }
+    }
+    else {
+        p = 2 * dx - dy;
+
+        for (int i = 0; i <= dy; i++) {
+            pixel(x, y);
+
+            y += sy;
+
+            if (p >= 0) {
+                x += sx;
+                p -= 2 * dy;
+            }
+
+            p += 2 * dx;
+        }
+    }
+
+    glFlush();
+}
+
+void init() {
+    glClearColor(1, 1, 1, 1);
+    gluOrtho2D(-250, 250, -250, 250);
+}
+
+int main(int argc, char* argv[]) {
+
+    cout << "Enter x1 y1 x2 y2: ";
+    cin >> x1 >> y1 >> x2 >> y2;
+
+    glutInit(&argc, argv);
+    glutInitDisplayMode(GLUT_RGB | GLUT_SINGLE);
+    glutInitWindowSize(500, 500);
+    glutCreateWindow("Bresenham Line");
+
+    init();
+
+    glutDisplayFunc(draw);
+    glutMainLoop();
+
+    return 0;
+}

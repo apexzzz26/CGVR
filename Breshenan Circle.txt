@@ -1,0 +1,67 @@
+
+#include <GL/glut.h>
+#include <iostream>
+using namespace std;
+
+int xc, yc, r;
+
+void draw() {
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    int x = 0, y = r;
+    int d = 3 - 2 * r;
+
+    glColor3f(0, 1, 0);
+    glPointSize(3);
+
+    while (x <= y) {
+        glBegin(GL_POINTS);
+
+        // 8-way symmetry
+        glVertex2i(xc + x, yc + y);
+        glVertex2i(xc - x, yc + y);
+        glVertex2i(xc + x, yc - y);
+        glVertex2i(xc - x, yc - y);
+
+        glVertex2i(xc + y, yc + x);
+        glVertex2i(xc - y, yc + x);
+        glVertex2i(xc + y, yc - x);
+        glVertex2i(xc - y, yc - x);
+
+        glEnd();
+
+        if (d < 0)
+            d = d + 4 * x + 6;
+        else {
+            d = d + 4 * (x - y) + 10;
+            y--;
+        }
+
+        x++;
+    }
+
+    glFlush();
+}
+
+void init() {
+    glClearColor(1, 1, 1, 1);
+    gluOrtho2D(-250, 250, -250, 250);
+}
+
+int main(int argc, char** argv) {
+
+    cout << "Enter xc, yc and radius: ";
+    cin >> xc >> yc >> r;
+
+    glutInit(&argc, argv);
+    glutInitDisplayMode(GLUT_RGB | GLUT_SINGLE);
+    glutInitWindowSize(500, 500);
+    glutCreateWindow("Bresenham Circle");
+
+    init();
+
+    glutDisplayFunc(draw);
+    glutMainLoop();
+
+    return 0;
+}

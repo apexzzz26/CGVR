@@ -1,0 +1,108 @@
+
+#include <GL/glut.h>
+#include <iostream>
+using namespace std;
+
+typedef GLfloat P[3];
+
+int n;
+
+P t[4] = {
+    {0, 0, 250},
+    {0, 250, -250},
+    {250, -250, -250},
+    {-250, -250, -250}
+};
+
+void triangle(P a, P b, P c) {
+    glVertex3fv(a);
+    glVertex3fv(b);
+    glVertex3fv(c);
+}
+
+void gasket(P a, P b, P c, P d, int n) {
+
+    if (n == 0) {
+        glColor3f(1, 0, 0);
+        triangle(a, b, c);
+
+        glColor3f(0, 1, 0);
+        triangle(a, b, d);
+
+        glColor3f(0, 0, 1);
+        triangle(a, c, d);
+
+        glColor3f(1, 1, 0);
+        triangle(b, c, d);
+
+        return;
+    }
+
+    P ab, ac, ad, bc, bd, cd;
+
+    for (int i = 0; i < 3; i++) {
+        ab[i] = (a[i] + b[i]) / 2;
+        ac[i] = (a[i] + c[i]) / 2;
+        ad[i] = (a[i] + d[i]) / 2;
+        bc[i] = (b[i] + c[i]) / 2;
+        bd[i] = (b[i] + d[i]) / 2;
+        cd[i] = (c[i] + d[i]) / 2;
+    }
+
+    gasket(a, ab, ac, ad, n - 1);
+    gasket(ab, b, bc, bd, n - 1);
+    gasket(ac, bc, c, cd, n - 1);
+    gasket(ad, bd, cd, d, n - 1);
+}
+
+void display() {
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+
+    glBegin(GL_TRIANGLES);
+
+    gasket(t[0], t[1], t[2], t[3], n);
+
+    glEnd();
+
+    glFlush();
+}
+
+int main(int argc, char** argv) {
+
+    cout << "Enter subdivisions: ";
+    cin >> n;
+
+    if (n < 0 || n > 7) {
+        cout << "Enter subdivisions between 0 and 7.";
+        return 0;
+    }
+
+    glutInit(&argc, argv);
+
+    glutInitDisplayMode(GLUT_RGB | GLUT_SINGLE | GLUT_DEPTH);
+    glutInitWindowSize(500, 500);
+
+    glutCreateWindow("Sierpinski Gasket");
+
+    glEnable(GL_DEPTH_TEST);
+
+    glClearColor(1, 1, 1, 1);
+    glClearDepth(1.0);
+
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+
+    glOrtho(-250, 250, -250, 250, -500, 500);
+
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+
+    glutDisplayFunc(display);
+
+    glutMainLoop();
+
+    return 0;
+}

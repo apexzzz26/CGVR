@@ -1,0 +1,165 @@
+
+#include <GL/glut.h>
+#include <iostream>
+#include <vector>
+using namespace std;
+
+float xmin = -100, ymin = -100;
+float xmax = 100, ymax = 100;
+
+struct Point {
+    float x, y;
+};
+
+// Draw polygon
+void draw(Point p[], int n) {
+    glBegin(GL_LINE_LOOP);
+
+    for (int i = 0; i < n; i++) {
+        glVertex2f(p[i].x, p[i].y);
+    }
+
+    glEnd();
+}
+
+// Check whether point is inside boundary
+bool inside(Point p, int edge) {
+    if (edge == 0) return p.x >= xmin; // Left
+    if (edge == 1) return p.x <= xmax; // Right
+    if (edge == 2) return p.y >= ymin; // Bottom
+    return p.y <= ymax;                // Top
+}
+
+// Find intersection point
+Point intersect(Point s, Point e, int edge) {
+    Point p;
+
+    float dx = e.x - s.x;
+    float dy = e.y - s.y;
+
+    if (edge == 0) {
+        p.x = xmin;
+        p.y = s.y + dy * (xmin - s.x) / dx;
+    }
+    else if (edge == 1) {
+        p.x = xmax;
+        p.y = s.y + dy * (xmax - s.x) / dx;
+    }
+    else if (edge == 2) {
+        p.y = ymin;
+        p.x = s.x + dx * (ymin - s.y) / dy;
+    }
+    else {
+        p.y = ymax;
+        p.x = s.x + dx * (ymax - s.y) / dy;
+    }
+
+    return p;
+}
+
+// Sutherland-Hodgman clipping
+vector<Point> clip(vector<Point> poly) {
+
+    for (int edge = 0; edge < 4; edge++) {
+
+        vector<Point> output;
+
+        if (poly.empty())
+            break;
+
+        Point s = poly.back();
+
+        for (Point e : poly) {
+
+            bool sin = inside(s, edge);
+            bool ein = inside(e, edge);
+
+            if (sin && ein) {
+                output.push_back(e);
+            }
+            else if (sin && !ein) {
+                output.push_back(intersect(s, e, edge));
+            }
+            else if (!sin && ein) {
+                output.push_back(intersect(s, e, edge));
+                output.push_back(e);
+            }
+
+            s = e;
+        }
+
+        poly = output;
+    }
+
+    return poly;
+}
+
+void display() {
+
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    Point p[] = {
+        {-120, -120},
+        {160, 80},
+        {80, 30},
+        {40, 120}
+    };
+
+    // Original polygon - Red
+    glColor3f(1, 0, 0);
+    draw(p, 4);
+
+    // Clipping window - Green
+    glColor3f(0, 1, 0);
+
+    glBegin(GL_LINE_LOOP);
+    glVertex2f(xmin, ymin);
+    glVertex2f(xmax, ymin);
+    glVertex2f(xmax, ymax);
+    glVertex2f(xmin, ymax);
+    glEnd();
+
+    // Clipped polygon - Blue
+    vector<Point> poly(p, p + 4);
+    poly = clip(poly);
+
+    if (poly.size() >= 3) {
+        glColor3f(0, 0, 1);
+
+        glBegin(GL_LINE_LOOP);
+
+        for (Point q : poly) {
+            glVertex2f(q.x, q.y);
+        }
+
+        glEnd();
+    }
+
+    glFlush();
+}
+
+int main(int argc, char** argv) {
+
+    glutInit(&argc, argv);
+
+    glutInitDisplayMode(GLUT_RGB | GLUT_SINGLE);
+    glutInitWindowSize(500, 500);
+
+    glutCreateWindow("Sutherland Hodgman Polygon Clipping");
+
+    glClearColor(1, 1, 1, 1);
+
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+
+    gluOrtho2D(-250, 250, -250, 250);
+
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+
+    glutDisplayFunc(display);
+
+    glutMainLoop();
+
+    return 0;
+}
